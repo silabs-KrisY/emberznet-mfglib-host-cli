@@ -27,6 +27,55 @@ This example adds the following custom commands:
 * getCtuneValue                 get Ctune Token value
 * get-info                      get XNCP info defined by callback on the NCP firmware
 
+**NOTE: The CTUNE token can only be set once in software. Once it is set, Simplicity Commander and a debug connection is required to erase and/or change it. So “getCtuneValue” must be used to test the value prior to using “setCtuneToken” to set it permanently.**
+
+## Examples
+
+# CtuneToken and CtuneValue
+
+With the CtuneToken and CtuneValue commands, we can use the Manufacturing Library (refer to [AN1162](https://www.silabs.com/documents/public/application-notes/an1162-using-manufacturing-library.pdf)) to iterate on setting ctune and outputting a CW tone. We can see the frequency of the CW tone change with each ctune value:
+ 
+  Z3Gateway> plugin mfglib start 1
+  Z3Gateway> plugin mfglib set-channel 11
+  Z3Gateway> plugin mfglib set-power 10 0
+  Z3Gateway> setCtuneValue 0x00
+  Z3Gateway> plugin mfglib tone start
+  Z3Gateway> plugin mfglib tone stop
+  Z3Gateway> setCtuneValue 0x80
+  Z3Gateway> plugin mfglib tone start
+  Z3Gateway> plugin mfglib tone stop
+
+# XNCP Info
+
+To add the xncp version info to your NCP firmware image:
+1. Add the Zigbee->NCP->XNCP component to your NCP firmware project
+2. Add code like this to app.c in the NCP firmware project:
+    #define XNCP_VERSION_NUMBER  0x1234
+    #define XNCP_MANUFACTURER_ID 0xABCD
+    /** @brief Get XNCP Information
+    *
+    * This callback enables users to communicate the version number and
+    * manufacturer ID of their NCP application to the framework. This information
+    * is needed for the EZSP command frame called getXncpInfo. This callback will
+    * be called when that frame is received so that the application can report
+    * its version number and manufacturer ID to be sent back to the HOST.
+    *
+    * @param versionNumber The version number of the NCP application.
+    * @param manufacturerId The manufacturer ID of the NCP application.
+    */
+    void emberAfPluginXncpGetXncpInformation(uint16_t *manufacturerId,
+                                            uint16_t *versionNumber)
+    {
+    *versionNumber = XNCP_VERSION_NUMBER;
+    *manufacturerId = XNCP_MANUFACTURER_ID;
+    }
+
+Here’s what this looks like on Z3Gateway when executing the “get-info” command:
+ 
+    Z3GatewayHost> custom get-info
+    Get XNCP info: status: 0x00
+    manufacturerId: 0xABCD, version: 0x1234
+
 ## Quality - EXPERIMENTAL
 
 This code has not been formally tested and is provided as-is. It is not suitable for production environments. In addition, this code will not be maintained and there may be no bug maintenance planned for these resources. Silicon Labs may update projects from time to time.
