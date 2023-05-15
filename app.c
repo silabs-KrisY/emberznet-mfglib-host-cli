@@ -56,6 +56,7 @@ void mfgGetCtuneToken(sl_cli_command_arg_t *arguments);
 void mfgSetCtuneValue(sl_cli_command_arg_t *arguments);
 void mfgGetCtuneValue(sl_cli_command_arg_t *arguments);
 void getInfoCommand(sl_cli_command_arg_t *arguments);
+void getCCAThreshold(sl_cli_command_arg_t *arguments);
 
 static const sl_cli_command_info_t cmd_setCtuneToken = \
     SL_CLI_COMMAND(mfgSetCtuneToken,
@@ -86,6 +87,13 @@ static const sl_cli_command_info_t cmd_getinfo = \
                   "Display the XNCP information on the CLI",
                   "",
                   {SL_CLI_ARG_END, });
+
+static const sl_cli_command_info_t cmd_getCCaThreshold = \
+   SL_CLI_COMMAND(getCCAThreshold,
+                  "Get the CCA value being used by the stack",
+                  "",
+                  {SL_CLI_ARG_END, });
+
 // Create the array of commands, containing three elements in this example
 static sl_cli_command_entry_t a_table[] = {
   { "setCtuneToken", &cmd_setCtuneToken, false },
@@ -93,6 +101,7 @@ static sl_cli_command_entry_t a_table[] = {
   { "setCtuneValue", &cmd_setCtuneValue, false },
   { "getCtuneValue", &cmd_getCtuneValue, false },
   { "get-info", &cmd_getinfo, false },
+  { "getCcaThreshold", &cmd_getCCaThreshold, false },
   { NULL, NULL, false },
 };
 
@@ -413,4 +422,21 @@ void getInfoCommand(sl_cli_command_arg_t *arguments)
   sl_zigbee_app_debug_print("Get XNCP info: status: 0x%X", status);
   sl_zigbee_app_debug_print("  manufacturerId: 0x%X, version: 0x%X\n",
                      manufacturerId, version);
+}
+
+void getCCAThreshold(sl_cli_command_arg_t *arguments)
+{
+  uint8_t cca_threshold[2];
+  uint8_t cca_threshold_len=2;
+
+  // Get the CCA threshold used by the stack (either default value or from the TOKEN_MFG_CCA_THRESHOLD)
+  // value is 2s complement representation of the CCA threshold in dBm. The default is 0xb5 => - 75 dBm
+
+  EzspStatus ezspstatus = ezspGetValue(EZSP_VALUE_CCA_THRESHOLD, &cca_threshold_len, cca_threshold);
+  if (ezspstatus == EZSP_SUCCESS) {
+    sl_zigbee_app_debug_print("cca threshold value 0x%x\r\n\r\n", cca_threshold[0]);
+  } else {
+    sl_zigbee_app_debug_print("Error 0x%04x getting cca threshold value\r\n\r\n",
+                              ezspstatus);
+  }
 }

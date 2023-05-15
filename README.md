@@ -26,6 +26,7 @@ This example adds the following custom commands:
     Example: setCtuneValue 0x80
 * getCtuneValue                 get Ctune Token value
 * get-info                      get XNCP info defined by callback on the NCP firmware
+* getCcaThreshold               get CCA threshold being used by the stack
 
 **NOTE: The CTUNE token can only be set once in software. Once it is set, Simplicity Commander and a debug connection is required to erase and/or change it. So “getCtuneValue” must be used to test the value prior to using “setCtuneToken” to set it permanently.**
 
